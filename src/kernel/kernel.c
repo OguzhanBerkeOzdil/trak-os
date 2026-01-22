@@ -12,20 +12,37 @@
 // Set to 0 for interrupt mode, 1 for safe polling mode
 #define SAFE_MODE 1
 
+// Display the boot logo with colors
+static void display_boot_logo(void) {
+    // Set cyan background with dark text for banner area
+    screen_set_color(VGA_COLOR_LIGHT_CYAN, VGA_COLOR_BLUE);
+    screen_println("                                                                                ");
+    
+    screen_set_color(VGA_COLOR_WHITE, VGA_COLOR_BLUE);
+    screen_println("  ████████╗██████╗  █████╗ ██╗  ██╗     ██████╗ ███████╗                        ");
+    screen_println("  ╚══██╔══╝██╔══██╗██╔══██╗██║ ██╔╝    ██╔═══██╗██╔════╝                        ");
+    screen_println("     ██║   ██████╔╝███████║█████╔╝     ██║   ██║███████╗                        ");
+    screen_println("     ██║   ██╔══██╗██╔══██║██╔═██╗     ██║   ██║╚════██║                        ");
+    screen_println("     ██║   ██║  ██║██║  ██║██║  ██╗    ╚██████╔╝███████║                        ");
+    screen_println("     ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝     ╚═════╝ ╚══════╝                        ");
+    
+    screen_set_color(VGA_COLOR_YELLOW, VGA_COLOR_BLUE);
+    screen_println("            T R A K Y A   O P E R A T I N G   S Y S T E M                       ");
+    
+    screen_set_color(VGA_COLOR_LIGHT_CYAN, VGA_COLOR_BLUE);
+    screen_println("                                                                                ");
+    
+    screen_set_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
+    screen_println("");
+}
+
 void kernel_main(void) {
     // Initialize screen driver
     screen_init();
     screen_clear();
     
-    // Display welcome message
-    screen_set_color(VGA_COLOR_WHITE, VGA_COLOR_BLUE);
-    if (SAFE_MODE) {
-        screen_println("                    TRAKOS v1.0 - SAFE MODE                        ");
-    } else {
-        screen_println("                    TRAKOS v1.0 - INTERACTIVE MODE                 ");
-    }
-    screen_set_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
-    screen_println("");
+    // Display boot logo
+    display_boot_logo();
     
     // Display system startup
     screen_set_color(VGA_COLOR_LIGHT_GREEN, VGA_COLOR_BLACK);
@@ -51,7 +68,7 @@ void kernel_main(void) {
     
     // Initialize keyboard
     keyboard_init();
-    screen_print("[ OK ] "); screen_println("Keyboard Driver");
+    screen_print("[ OK ] "); screen_println("Keyboard Driver (Universal PS/2)");
     
     // Initialize shell
     shell_init();
