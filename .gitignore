@@ -1,0 +1,26 @@
+# Build outputs
+build/
+*.o
+*.bin
+*.iso
+
+# Temporary files
+*.tmp
+*.bak
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+qemu_output.txt
+
+# ISO directory (generated)
+isodir/boot/kernel.bin
