@@ -87,6 +87,69 @@ static void print_hex(uint32_t num) {
     screen_print(buffer);
 }
 
+// Available commands for tab completion
+static const char* shell_commands[] = {
+    "help", "clear", "echo", "about", "version", "time", "sleep", 
+    "calc", "colors", "memory", "memtest", "ls", "cat", "create", 
+    "delete", "edit", "copy", "fsinfo", "ps", "uptime", "sysinfo", "reboot"
+};
+#define NUM_COMMANDS (sizeof(shell_commands) / sizeof(shell_commands[0]))
+
+// String compare with prefix matching
+static int strncmp(const char* str1, const char* str2, int n) {
+    for (int i = 0; i < n; i++) {
+        if (str1[i] != str2[i]) return str1[i] - str2[i];
+        if (str1[i] == '\0') return 0;
+    }
+    return 0;
+}
+
+// Tab completion function
+static int tab_complete(char* buffer, int buffer_len) {
+    if (buffer_len == 0) return buffer_len;
+    
+    const char* match = 0;
+    int matches = 0;
+    
+    for (uint32_t i = 0; i < NUM_COMMANDS; i++) {
+        if (strncmp(buffer, shell_commands[i], buffer_len) == 0) {
+            match = shell_commands[i];
+            matches++;
+        }
+    }
+    
+    if (matches == 1 && match) {
+        // Single match - complete it
+        int match_len = strlen(match);
+        for (int i = buffer_len; i < match_len; i++) {
+            buffer[i] = match[i];
+            char str[2] = {match[i], '\0'};
+            screen_print(str);
+        }
+        buffer[match_len] = ' ';
+        buffer[match_len + 1] = '\0';
+        screen_print(" ");
+        return match_len + 1;
+    } else if (matches > 1) {
+        // Multiple matches - show options
+        screen_println("");
+        screen_set_color(VGA_COLOR_LIGHT_CYAN, VGA_COLOR_BLACK);
+        for (uint32_t i = 0; i < NUM_COMMANDS; i++) {
+            if (strncmp(buffer, shell_commands[i], buffer_len) == 0) {
+                screen_print(shell_commands[i]);
+                screen_print("  ");
+            }
+        }
+        screen_println("");
+        screen_set_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
+        shell_print_prompt();
+        screen_print(buffer);
+        return buffer_len;
+    }
+    
+    return buffer_len;
+}
+
 void shell_init(void) {
     screen_set_color(VGA_COLOR_LIGHT_GREEN, VGA_COLOR_BLACK);
     screen_println("");
@@ -503,11 +566,25 @@ void shell_run(void) {
                 buffer_index = 0;
                 shell_print_prompt();
             } else if (key == '\b') {
+                // Backspace - delete character before cursor
                 if (buffer_index > 0) {
                     buffer_index--;
+                    command_buffer[buffer_index] = '\0';
                     screen_print("\b \b");
                 }
-            } else if (buffer_index < SHELL_BUFFER_SIZE - 1) {
+            } else if (key == 0x7F) {
+                // Delete key - same as backspace in terminal mode
+                if (buffer_index > 0) {
+                    buffer_index--;
+                    command_buffer[buffer_index] = '\0';
+                    screen_print("\b \b");
+                }
+            } else if (key == '\t') {
+                // Tab - auto-complete
+                command_buffer[buffer_index] = '\0';
+                buffer_index = tab_complete(command_buffer, buffer_index);
+            } else if (key >= 32 && key < 127 && buffer_index < SHELL_BUFFER_SIZE - 1) {
+                // Regular printable character
                 command_buffer[buffer_index++] = key;
                 char str[2] = {key, '\0'};
                 screen_print(str);
